@@ -1,0 +1,12 @@
+[build]
+  command = "node build.js"
+  publish = "site"
+
+[functions]
+  node_bundler = "esbuild"
+
+# 页面本身不缓存，否则改了经济模型手机上还看到旧版
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    cache-control = "no-cache"

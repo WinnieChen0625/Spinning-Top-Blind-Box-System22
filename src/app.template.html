@@ -1,0 +1,903 @@
+<title>UX-20 陀螺盲盒</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --void:#0B0E13; --deck:#141A23; --deck2:#1B222D; --deck3:#222B38;
+  --rail:#2A3340; --rail-hot:#3D4A5C;
+  --steel:#8492A5; --steel-dim:#5E6B7C; --chalk:#E7EDF5;
+  --energy:#FF3B5C; --energy-2:#FF7A4D; --ok:#4FD18B;
+  --t0:#C87137; --t1:#AEBCCB; --t2:#DFA323; --t3:#8FB6DE;
+  --t4:#7FE9F0; --t5:#3FD07E; --t6:#FF8FA8; --t7:#C9A6FF;
+  --disp:'Chakra Petch','Noto Sans SC',system-ui,sans-serif;
+  --body:'Noto Sans SC','Chakra Petch',system-ui,sans-serif;
+  --bevel:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body{
+  margin:0; background:var(--void); color:var(--chalk);
+  font-family:var(--body); font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(120% 62% at 50% -14%, rgba(255,59,92,.10), transparent 62%),
+    radial-gradient(90% 50% at 12% 108%, rgba(63,208,126,.06), transparent 60%);
+  background-attachment:fixed;
+}
+h1,h2,h3{font-family:var(--disp);font-weight:700;margin:0;text-wrap:balance;letter-spacing:.01em}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible{outline:2px solid var(--energy);outline-offset:2px}
+input{font:inherit;color:var(--chalk);background:var(--void);border:1px solid var(--rail);border-radius:3px;padding:7px 9px;width:100%}
+textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.5;color:var(--chalk);background:var(--void);border:1px solid var(--rail);border-radius:3px;padding:7px 9px;width:100%;resize:vertical}
+ol,ul{margin:0;padding:0;list-style:none}
+.num{font-family:var(--disp);font-variant-numeric:tabular-nums;font-weight:700}
+.eyebrow{font-family:var(--disp);font-size:10.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--steel-dim)}
+
+.wrap{max-width:660px;margin-inline:auto;padding:20px 15px 72px}
+
+/* ---------- header ---------- */
+.hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.hdr .mark{width:34px;height:34px;flex:0 0 auto;filter:drop-shadow(0 2px 6px rgba(255,59,92,.35))}
+.hdr h1{font-size:19px;line-height:1.2}
+.hdr .sub{margin:1px 0 0;font-size:11.5px;color:var(--steel-dim);font-family:var(--disp);letter-spacing:.06em}
+.hdr .spacer{flex:1}
+.chip-btn{font-family:var(--disp);font-size:11.5px;font-weight:600;letter-spacing:.1em;
+  padding:7px 12px;border:1px solid var(--rail);border-radius:2px;color:var(--steel);background:var(--deck)}
+.chip-btn:hover{border-color:var(--rail-hot);color:var(--chalk)}
+.chip-btn[data-on="1"]{border-color:var(--energy);color:var(--energy)}
+
+/* ---------- panels ---------- */
+.deck{background:var(--deck);border:1px solid var(--rail);padding:16px;margin-bottom:14px;position:relative;border-radius:3px}
+.deck>h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin-bottom:12px;font-weight:600}
+.deck.hero{clip-path:var(--bevel);border:0;
+  background:linear-gradient(168deg,#1C2431,#11161E 62%);
+  box-shadow:inset 0 0 0 1px var(--rail), 0 14px 40px -22px #000}
+
+/* ---------- goal ---------- */
+.goal-top{margin-bottom:14px}
+.prize{font-family:var(--disp);font-size:24px;font-weight:700;line-height:1.15;margin-top:2px;
+  background:linear-gradient(96deg,#EFAE79,#F2F7FC 22%,#FFDD82 42%,#E4F2FF 60%,#8CF3D8 76%,#FFB0C6 88%,#C9A6FF);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+
+.track{position:relative;height:24px;background:var(--void);border:1px solid var(--rail);border-radius:2px;overflow:hidden}
+.track .fill{position:absolute;inset:1px auto 1px 1px;width:0;border-radius:1px;
+  background:linear-gradient(90deg,var(--t0),var(--t1) 16%,var(--t2) 33%,var(--t3) 50%,var(--t4) 66%,var(--t5) 80%,var(--t6) 92%,var(--t7));
+  background-size:calc(100% * var(--tot,1)) 100%;
+  transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.track .fill::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.3),transparent 42%,rgba(0,0,0,.3))}
+.track .tick{position:absolute;top:0;bottom:0;width:1px;background:var(--rail-hot)}
+.tickrow{display:grid;grid-template-columns:repeat(3,1fr);margin-top:6px;
+  font-family:var(--disp);font-size:10px;letter-spacing:.08em;color:var(--steel-dim);text-align:right}
+.rule{margin:12px 0 0;font-size:11.5px;color:var(--steel-dim);text-align:center;letter-spacing:.02em}
+.rule b{color:var(--steel);font-weight:500}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:16px;background:var(--rail);border:1px solid var(--rail);border-radius:2px;overflow:hidden}
+.stats div{background:var(--deck2);padding:10px 8px;text-align:center}
+.stats b{display:block;font-family:var(--disp);font-variant-numeric:tabular-nums;font-size:18px;font-weight:700;line-height:1.25}
+.stats span{display:block;font-size:10.5px;color:var(--steel-dim);letter-spacing:.06em;margin-top:2px}
+
+/* ---------- launcher ---------- */
+.launch{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ptsbox{flex:0 0 auto;min-width:92px}
+.ptsbox b{display:block;font-family:var(--disp);font-variant-numeric:tabular-nums;font-size:34px;font-weight:700;line-height:1}
+.ptsbox span{font-size:11px;color:var(--steel-dim);letter-spacing:.1em}
+.fires{flex:1 1 230px;display:grid;grid-template-columns:1fr 1.3fr;gap:8px}
+.fire{clip-path:var(--bevel);padding:13px 10px;text-align:center;
+  font-family:var(--disp);font-size:15px;font-weight:700;letter-spacing:.1em;transition:filter .2s,transform .12s}
+.fire em{display:block;font-style:normal;font-size:10.5px;font-weight:600;letter-spacing:.14em;opacity:.7}
+.fire.one{background:var(--deck3);color:var(--chalk);box-shadow:inset 0 0 0 1px var(--rail-hot)}
+.fire.ten{color:#12060A;background:linear-gradient(160deg,var(--energy-2),var(--energy) 55%,#D41F41);
+  box-shadow:0 8px 24px -12px var(--energy)}
+.fire:hover{filter:brightness(1.1)}
+.fire:active{transform:translateY(2px)}
+.fire:disabled{background:var(--deck2);color:var(--steel-dim);box-shadow:inset 0 0 0 1px var(--rail);cursor:not-allowed;filter:none}
+.hint{margin:12px 0 0;font-size:12.5px;color:var(--steel-dim);text-align:center}
+.hint b{color:var(--chalk);font-weight:600}
+
+/* ---------- shelf ---------- */
+.rung{display:flex;align-items:center;gap:11px;padding:8px 0;border-top:1px solid var(--rail)}
+.rung:first-child{border-top:0;padding-top:0}
+.rung .top{width:32px;height:32px;flex:0 0 auto}
+.rung.locked .top{opacity:.22;filter:grayscale(1)}
+.rung .nm{flex:1;min-width:0}
+.rung .nm strong{display:block;font-family:var(--disp);font-size:13.5px;font-weight:600;letter-spacing:.04em}
+.rung.locked .nm strong{color:var(--steel-dim)}
+.rung .nm small{display:block;font-size:10px;color:var(--steel-dim);letter-spacing:.1em}
+.rung .ct{font-family:var(--disp);font-variant-numeric:tabular-nums;font-size:21px;font-weight:700;min-width:34px;text-align:right}
+.rung .ct.zero{color:var(--steel-dim);opacity:.4}
+.mg{flex:0 0 auto;font-family:var(--disp);font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  padding:6px 8px;border:1px solid var(--rail);border-radius:2px;color:var(--steel-dim);min-width:70px;text-align:center}
+.mg.on{border-color:var(--ok);color:var(--ok);background:rgba(79,209,139,.08);cursor:pointer}
+.mg.on:hover{background:rgba(79,209,139,.17)}
+.mg.goal{border-color:var(--t7);color:var(--t7);background:rgba(201,166,255,.1);cursor:pointer}
+.wide{display:block;width:100%;margin-top:13px;padding:11px;text-align:center;
+  font-family:var(--disp);font-size:13px;font-weight:600;letter-spacing:.1em;
+  border:1px solid var(--rail);border-radius:2px;color:var(--steel)}
+.wide:hover{border-color:var(--rail-hot);color:var(--chalk)}
+.wide.hot{border-color:var(--ok);color:var(--ok);background:rgba(79,209,139,.08)}
+
+/* ---------- parent ---------- */
+.grp{margin-bottom:14px}
+.grp .eyebrow{display:block;margin-bottom:7px}
+.tasks{display:flex;flex-wrap:wrap;gap:7px}
+.task{display:flex;align-items:stretch;border:1px solid var(--rail);border-radius:2px;overflow:hidden;background:var(--deck2)}
+.task .lb{padding:7px 10px;font-size:12.5px;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.task .lb i{font-style:normal;font-family:var(--disp);font-size:10.5px;color:var(--steel-dim)}
+.task .st{display:flex;align-items:center;border-left:1px solid var(--rail)}
+.task .st button{width:28px;font-family:var(--disp);font-size:15px;font-weight:700;color:var(--steel);line-height:1}
+.task .st button:hover{color:var(--energy)}
+.task .st .n{font-family:var(--disp);font-variant-numeric:tabular-nums;font-size:13px;font-weight:700;min-width:20px;text-align:center}
+.task[data-active="1"]{border-color:var(--energy);background:rgba(255,59,92,.07)}
+.sumbar{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:13px;border-top:1px solid var(--rail)}
+.sumbar .tot{flex:1;font-size:12.5px;color:var(--steel)}
+.sumbar .tot b{font-family:var(--disp);font-variant-numeric:tabular-nums;font-size:22px;color:var(--chalk);font-weight:700}
+.commit{clip-path:var(--bevel);padding:11px 20px;font-family:var(--disp);font-size:14px;font-weight:700;letter-spacing:.1em;
+  color:#08120C;background:linear-gradient(160deg,#68E5A2,var(--ok))}
+.commit:disabled{background:var(--deck3);color:var(--steel-dim);cursor:not-allowed}
+.caps{display:flex;gap:16px;margin-top:12px;font-size:11.5px;color:var(--steel-dim);font-family:var(--disp);letter-spacing:.05em}
+.caps span b{color:var(--steel);font-variant-numeric:tabular-nums}
+.caps span.over b{color:var(--energy)}
+
+/* ---------- log ---------- */
+.logl li{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid rgba(42,51,64,.6);font-size:12.5px}
+.logl li:first-child{border-top:0}
+.logl .tm{font-family:var(--disp);font-size:10.5px;color:var(--steel-dim);min-width:52px;font-variant-numeric:tabular-nums}
+.logl .tx{flex:1;color:var(--steel)}
+.logl .tx b{color:var(--chalk);font-weight:500}
+.logl .dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+.empty{color:var(--steel-dim);font-size:12.5px;padding:6px 0}
+
+/* ---------- modal ---------- */
+.scrim{position:fixed;inset:0;background:rgba(6,9,13,.82);backdrop-filter:blur(5px);
+  display:flex;align-items:center;justify-content:center;padding:18px;z-index:40}
+.modal{background:var(--deck);border:1px solid var(--rail);border-radius:3px;padding:18px;
+  width:100%;max-width:420px;max-height:86vh;overflow:auto;box-shadow:0 30px 70px -30px #000}
+.modal h3{font-size:15px;margin-bottom:14px;letter-spacing:.06em}
+.fld{margin-bottom:11px}
+.fld label{display:block;font-size:11.5px;color:var(--steel-dim);margin-bottom:4px;letter-spacing:.04em}
+.fld.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.mrow{display:flex;gap:9px;margin-top:16px}
+.mrow button{flex:1;padding:10px;border:1px solid var(--rail);border-radius:2px;
+  font-family:var(--disp);font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--steel)}
+.mrow button.pri{border-color:var(--energy);background:var(--energy);color:#12060A}
+.mrow button.dgr{border-color:#5A2130;color:var(--energy)}
+.note{font-size:11.5px;color:var(--steel-dim);line-height:1.7;margin:12px 0 0;
+  padding:11px;background:var(--void);border-left:2px solid var(--rail);border-radius:0 2px 2px 0}
+.note b{color:var(--steel)}
+.note .num{color:var(--chalk)}
+.sec-h{font-family:var(--disp);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel-dim);
+  margin:18px 0 9px;padding-top:13px;border-top:1px solid var(--rail)}
+.sec-h:first-of-type{margin-top:0;padding-top:0;border-top:0}
+
+/* ---------- reveal ---------- */
+.ov{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
+  background:rgba(6,9,13,.94);backdrop-filter:blur(6px);padding:18px}
+.ov-in{position:relative;text-align:center;width:min(360px,90vw)}
+.burst{position:absolute;left:50%;top:100px;width:520px;height:520px;translate:-50% -50%;opacity:0;
+  background:repeating-conic-gradient(from 0deg,var(--flare,#fff) 0deg 2.4deg,transparent 2.4deg 13deg);
+  -webkit-mask-image:radial-gradient(closest-side,#000 12%,transparent 74%);
+  mask-image:radial-gradient(closest-side,#000 12%,transparent 74%);pointer-events:none}
+.ov .top{width:160px;height:160px;position:relative}
+.spinwrap{height:196px;display:flex;align-items:center;justify-content:center}
+.ov-lab{font-family:var(--disp);font-size:12.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--steel-dim);min-height:19px}
+.ov-nm{font-family:var(--disp);font-size:30px;font-weight:700;letter-spacing:.03em;margin-top:5px;min-height:40px}
+.ov-sub{font-size:12.5px;color:var(--steel-dim);margin-top:3px;min-height:19px}
+.haul{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:15px}
+.ov .haul .hz{display:inline-flex;animation:pop .42s both}
+.ov .haul .top{width:29px;height:29px;opacity:.92}
+.ov button{margin-top:20px;padding:11px 34px;clip-path:var(--bevel);
+  font-family:var(--disp);font-size:14px;font-weight:700;letter-spacing:.16em;
+  background:var(--deck3);color:var(--chalk)}
+.ov button:hover{background:var(--rail-hot)}
+.ov.spin .spinwrap .top{animation:spin .34s linear infinite}
+.ov.rev .spinwrap .top{animation:land .9s cubic-bezier(.16,1.1,.3,1) forwards}
+.ov.rev .burst{animation:flare 1.5s ease-out forwards}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes land{0%{transform:rotate(0) scale(.72)}62%{transform:rotate(760deg) scale(1.12)}100%{transform:rotate(720deg) scale(1)}}
+@keyframes flare{0%{opacity:0;transform:scale(.3) rotate(0)}22%{opacity:.75}100%{opacity:0;transform:scale(1.25) rotate(58deg)}}
+.pop{animation:pop .5s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes pop{from{opacity:0;transform:translateY(9px) scale(.94)}to{opacity:1;transform:none}}
+.toast{position:fixed;left:50%;bottom:22px;translate:-50% 0;z-index:80;
+  background:var(--deck3);border:1px solid var(--rail-hot);border-radius:3px;padding:9px 16px;font-size:12.5px;
+  box-shadow:0 12px 32px -14px #000;animation:pop .3s both}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+@media (max-width:430px){
+  .prize{font-size:21px}
+  .stats b{font-size:16px}
+  .ptsbox b{font-size:29px}
+  .ov-nm{font-size:26px}
+}
+</style>
+<!--SPLIT-->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute" focusable="false"><defs>
+  <linearGradient id="mg0" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#EFAE79"/><stop offset=".45" stop-color="#C87137"/><stop offset="1" stop-color="#6B3A18"/></linearGradient>
+  <linearGradient id="mg1" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#F2F7FC"/><stop offset=".45" stop-color="#AEBCCB"/><stop offset="1" stop-color="#5C6976"/></linearGradient>
+  <linearGradient id="mg2" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#FFDD82"/><stop offset=".45" stop-color="#DFA323"/><stop offset="1" stop-color="#7A560D"/></linearGradient>
+  <linearGradient id="mg3" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#E4F2FF"/><stop offset=".42" stop-color="#8FB6DE"/><stop offset="1" stop-color="#3C5B7A"/></linearGradient>
+  <linearGradient id="mg4" x1="0" y1="0" x2=".4" y2="1"><stop offset="0" stop-color="#F0FEFF"/><stop offset=".38" stop-color="#7FE9F0"/><stop offset="1" stop-color="#256C82"/></linearGradient>
+  <linearGradient id="mg5" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="#C4FFDC"/><stop offset=".42" stop-color="#3FD07E"/><stop offset="1" stop-color="#125C37"/></linearGradient>
+  <linearGradient id="mg6" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="#FFE3D2"/><stop offset=".4" stop-color="#FF8FA8"/><stop offset="1" stop-color="#8E2A46"/></linearGradient>
+  <linearGradient id="mg7" x1="0" y1="0" x2=".55" y2="1"><stop offset="0" stop-color="#FFE9A8"/><stop offset=".3" stop-color="#FF8FA8"/><stop offset=".6" stop-color="#C9A6FF"/><stop offset=".85" stop-color="#6FE8D6"/><stop offset="1" stop-color="#2F3E6B"/></linearGradient>
+  <linearGradient id="mgE" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#FF9E6E"/><stop offset=".5" stop-color="#FF3B5C"/><stop offset="1" stop-color="#7A0F26"/></linearGradient>
+  <linearGradient id="mgX" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#3D4A5C"/><stop offset="1" stop-color="#1B222D"/></linearGradient>
+</defs></svg>
+
+<div class="wrap">
+  <header class="hdr">
+    <svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><g fill="url(#mgE)"><path d="M50 15 L79 29 L88 47 L72 60 L50 66 L28 60 L12 47 L21 29 Z"/><path d="M41 62 L59 62 L50 89 Z"/></g><circle cx="50" cy="41" r="12" fill="#0B0E13"/><circle cx="50" cy="41" r="6" fill="url(#mgE)"/></svg>
+    <div>
+      <h1 id="hTitle">UX-20 陀螺盲盒</h1>
+      <p class="sub" id="hSub">第 1 天</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="chip-btn" id="modeBtn">家长</button>
+  </header>
+
+  <section class="deck hero">
+    <div class="goal-top">
+      <span class="eyebrow">最终奖励</span>
+      <div class="prize" id="prizeName">UX-20 战斗陀螺</div>
+    </div>
+
+    <div class="track" id="track">
+      <div class="fill" id="goalFill"></div>
+      <div class="tick" style="left:33.33%"></div>
+      <div class="tick" style="left:66.67%"></div>
+    </div>
+    <div class="tickrow"><span>红金 1</span><span>红金 2</span><span>终极陀螺</span></div>
+    <p class="rule" id="ruleLine"></p>
+
+    <div class="stats">
+      <div><b id="sDraws">0</b><span>已开盒</span></div>
+      <div><b id="sBest">—</b><span>最高纪录</span></div>
+      <div><b id="sSeen">0 / 8</b><span>图鉴</span></div>
+    </div>
+  </section>
+
+  <section class="deck">
+    <div class="launch">
+      <div class="ptsbox"><b id="sPts">0</b><span>积分</span></div>
+      <div class="fires">
+        <button class="fire one" id="draw1">开 1 盒<em id="c1">5 分</em></button>
+        <button class="fire ten" id="draw10">十连开<em id="c10">50 分</em></button>
+      </div>
+    </div>
+    <p class="hint" id="drawHint"></p>
+  </section>
+
+  <section class="deck">
+    <h2>收藏架</h2>
+    <div id="shelf"></div>
+    <button class="wide" id="mergeAll">全部合成</button>
+  </section>
+
+  <section class="deck" id="pPanel" hidden>
+    <h2>加分台</h2>
+    <div id="taskGroups"></div>
+    <div class="sumbar">
+      <div class="tot">本次合计 <b id="pendSum">0</b> 分</div>
+      <button class="commit" id="commitBtn" disabled>记入</button>
+    </div>
+    <div class="caps">
+      <span id="capD">今日 <b>0</b> / 90</span>
+      <span id="capM">本月 <b>0</b> / 2300</span>
+    </div>
+    <button class="wide" id="setBtn">设置与调整</button>
+  </section>
+
+  <section class="deck">
+    <h2>记录</h2>
+    <ol class="logl" id="logList"></ol>
+  </section>
+</div>
+
+<div id="modalRoot"></div>
+<div id="ovRoot"></div>
+
+<script id="tpl" type="text/plain">__TPL_B64__</script>
+<script>
+(() => {
+"use strict";
+const EMBEDDED = /*__STATE__*/null;
+const VER = 3;
+
+/* ---------- 八级阶梯：3 个换 1 个 ---------- */
+const TIER = [
+  {nm:"铜陀螺",    en:"COPPER",    v:1,    f:"#C87137"},
+  {nm:"银陀螺",    en:"SILVER",    v:3,    f:"#AEBCCB"},
+  {nm:"金陀螺",    en:"GOLD",      v:9,    f:"#DFA323"},
+  {nm:"铂金陀螺",  en:"PLATINUM",  v:27,   f:"#8FB6DE"},
+  {nm:"钻石陀螺",  en:"DIAMOND",   v:81,   f:"#7FE9F0"},
+  {nm:"绿宝石陀螺",en:"EMERALD",   v:243,  f:"#3FD07E"},
+  {nm:"红金陀螺",  en:"ROSE GOLD", v:729,  f:"#FF8FA8"},
+  {nm:"终极陀螺",  en:"ULTIMATE",  v:2187, f:"#C9A6FF"}
+];
+const TOP = TIER.length - 1;
+const TARGET = TIER[TOP].v;
+
+const DEFAULT = {
+  v:VER, seq:0, start:todayISO(), pts:0, earned:0, draws:0, sincePlat:0, redeemed:0,
+  inv:[0,0,0,0,0,0,0,0], seen:[0,0,0,0,0,0,0,0],
+  tally:{d:todayISO(), dp:0, m:todayISO().slice(0,7), mp:0},
+  log:[],
+  cfg:{
+    cost:5, ratio:3, rates:[88,9.6,2,0.32,0.08], pity:400, tenGuard:true,
+    prize:"UX-20 战斗陀螺", yuan:1550,
+    capD:90, capM:2300, pin:"2020",
+    tasks:[
+      {g:"数学",l:"2分钟影片",p:1},{g:"数学",l:"简单题",p:1},
+      {g:"数学",l:"中等题",p:2},{g:"数学",l:"困难题",p:4},
+      {g:"英文",l:"单词",p:1},{g:"英文",l:"语法点",p:20},
+      {g:"英文",l:"口说 5 分钟",p:2.5},{g:"英文",l:"听力 5 分钟",p:2.5},
+      {g:"英文",l:"阅读 5 分钟",p:2.5}
+    ]
+  }
+};
+
+/* ---------- helpers ---------- */
+function todayISO(d){ d = d || new Date(); const z = new Date(d.getTime() - d.getTimezoneOffset()*6e4); return z.toISOString().slice(0,10); }
+function fmt(n){ n = Math.round(n*10)/10; return n % 1 ? n.toFixed(1) : String(n); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function b64e(s){ const b = new TextEncoder().encode(s); let x=""; for(const n of b) x += String.fromCharCode(n); return btoa(x); }
+function b64d(s){ const bin = atob(s); const b = Uint8Array.from(bin, c => c.charCodeAt(0)); return new TextDecoder().decode(b); }
+
+function migrate(s){
+  const out = clone(DEFAULT);
+  if (!s || typeof s !== "object" || s.v !== VER) return out;   // 换代直接重开
+  for (const k of ["seq","start","pts","earned","draws","sincePlat","redeemed"]) if (k in s) out[k] = s[k];
+  if (Array.isArray(s.inv))  out.inv  = TIER.map((_,i) => Number(s.inv[i])  || 0);
+  if (Array.isArray(s.seen)) out.seen = TIER.map((_,i) => Number(s.seen[i]) || 0);
+  if (s.tally) Object.assign(out.tally, s.tally);
+  if (Array.isArray(s.log)) out.log = s.log.slice(0,120);
+  if (s.cfg) { Object.assign(out.cfg, s.cfg); if (!Array.isArray(s.cfg.tasks) || !s.cfg.tasks.length) out.cfg.tasks = clone(DEFAULT.cfg.tasks); }
+  return out;
+}
+
+/* ---------- state ---------- */
+let S = migrate(EMBEDDED);
+try {
+  const raw = localStorage.getItem("bb.state");
+  if (raw) { const L = migrate(JSON.parse(raw)); if ((L.seq|0) > (S.seq|0)) S = L; }
+} catch (e) {}
+rollTally();
+
+/* 三种后端：artifact（自己发布新版）/ remote（Netlify 函数）/ local（只有本机） */
+const onArtifact = !!(window.claude && window.claude.use);
+let backend = onArtifact ? "artifact" : "local";
+let ART = null, readOnly = false, publishing = false, parentMode = false, BOOTP = null;
+const ARTP = onArtifact
+  ? window.claude.use("artifact").then(a => a || null).catch(() => null)
+  : Promise.resolve(null);
+ARTP.then(a => { ART = a; if (!a) backend = "local"; });
+
+const API = "/api/state";
+let syncKey = "";
+try { syncKey = localStorage.getItem("bb.key") || ""; } catch (e) {}
+(function(){
+  const m = /[#&]k=([^&]*)/.exec(location.hash);
+  if (!m) return;
+  syncKey = decodeURIComponent(m[1]);
+  try { localStorage.setItem("bb.key", syncKey); } catch (e) {}
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+})();
+const pend = {};
+
+/* ---------- derived ---------- */
+function copperEq(){ return S.inv.reduce((a,n,i) => a + n*TIER[i].v, 0); }
+function evDraw(){ return S.cfg.rates.reduce((a,p,i) => a + (p/100)*TIER[i].v, 0); }
+function yuanPerCu(){ return S.cfg.yuan / TARGET; }
+function rollTally(){
+  const t = todayISO();
+  if (S.tally.d !== t) { S.tally.d = t; S.tally.dp = 0; }
+  if (S.tally.m !== t.slice(0,7)) { S.tally.m = t.slice(0,7); S.tally.mp = 0; }
+}
+function dayNo(){ return Math.max(1, Math.floor((Date.now() - Date.parse(S.start + "T00:00:00")) / 864e5) + 1); }
+function bestSeen(){ for (let i = TOP; i >= 0; i--) if (S.seen[i]) return i; return -1; }
+function nextStep(){
+  const R = S.cfg.ratio;
+  for (let i = TOP-1; i >= 0; i--) if (S.inv[i] >= R) return {ready:true, i};
+  for (let i = TOP-1; i >= 0; i--) if (S.inv[i] > 0) return {ready:false, i, need:R - S.inv[i]};
+  return null;
+}
+
+/* ---------- svg ---------- */
+function topSVG(i, cls){
+  const g = "mg" + i;
+  return '<svg class="top ' + (cls||"") + '" viewBox="0 0 100 100" aria-hidden="true">'
+    + '<g fill="url(#' + g + ')"><path d="M50 15 L79 29 L88 47 L72 60 L50 66 L28 60 L12 47 L21 29 Z"/><path d="M41 62 L59 62 L50 89 Z"/></g>'
+    + '<circle cx="50" cy="41" r="12" fill="#0B0E13"/><circle cx="50" cy="41" r="6" fill="url(#' + g + ')"/>'
+    + '<path d="M50 15 L79 29 L72 33 L50 22 Z" fill="#fff" opacity=".26"/></svg>';
+}
+
+/* ---------- render ---------- */
+function render(){
+  rollTally();
+  const cu = copperEq(), R = S.cfg.ratio;
+  const pct = Math.min(100, cu / TARGET * 100);
+
+  el("hTitle").textContent = S.cfg.prize.replace(/\s*战斗陀螺\s*$/, "") + " 陀螺盲盒";
+  el("hSub").textContent = "第 " + dayNo() + " 天";
+  el("prizeName").textContent = S.cfg.prize;
+  el("ruleLine").innerHTML = "<b>" + R + "</b> 个换上一级 · <b>" + R + "</b> 个红金陀螺 = 终极陀螺";
+
+  el("goalFill").style.width = pct + "%";
+  el("goalFill").style.setProperty("--tot", pct > 0 ? String(100/pct) : "1");
+
+  el("sDraws").textContent = S.draws;
+  const b = bestSeen();
+  el("sBest").textContent = b < 0 ? "—" : TIER[b].nm.replace("陀螺","");
+  el("sBest").style.color = b < 0 ? "" : TIER[b].f;
+  el("sSeen").textContent = S.seen.filter(Boolean).length + " / " + TIER.length;
+
+  el("sPts").textContent = fmt(S.pts);
+  el("c1").textContent = fmt(S.cfg.cost) + " 分";
+  el("c10").textContent = fmt(S.cfg.cost*10) + " 分";
+  el("draw1").disabled = publishing || S.pts < S.cfg.cost;
+  el("draw10").disabled = publishing || S.pts < S.cfg.cost*10;
+
+  const ns = nextStep();
+  let hint;
+  if (S.pts < S.cfg.cost) hint = "还差 <b>" + fmt(S.cfg.cost - S.pts) + "</b> 分开下一盒";
+  else if (!ns) hint = "开一盒，收藏就从这里开始";
+  else if (ns.ready) hint = "可以合成 <b style='color:" + TIER[ns.i+1].f + "'>" + TIER[ns.i+1].nm + "</b> 了！";
+  else hint = "再 <b>" + ns.need + "</b> 个" + TIER[ns.i].nm + " → <b style='color:" + TIER[ns.i+1].f + "'>" + TIER[ns.i+1].nm + "</b>";
+  el("drawHint").innerHTML = hint;
+
+  el("shelf").innerHTML = TIER.map((t,i) => {
+    const n = S.inv[i], locked = !S.seen[i] && !n;
+    let btn;
+    if (i === TOP) btn = n >= 1 ? '<button class="mg goal" data-redeem="1">兑换奖励</button>' : '<span class="mg">最终目标</span>';
+    else if (n >= R) btn = '<button class="mg on" data-merge="' + i + '">' + R + " → 1</button>";
+    else btn = '<span class="mg">还差 ' + (R - n) + " 个</span>";
+    return '<div class="rung' + (locked ? " locked" : "") + '">' + topSVG(locked ? "X" : i)
+      + '<div class="nm"><strong>' + t.nm + "</strong><small>" + t.en + "</small></div>"
+      + '<div class="ct' + (n ? "" : " zero") + '">' + n + "</div>" + btn + "</div>";
+  }).join("");
+
+  const anyMerge = TIER.some((_,i) => i < TOP && S.inv[i] >= R);
+  const mb = el("mergeAll");
+  mb.hidden = !anyMerge; mb.classList.toggle("hot", anyMerge);
+
+  el("pPanel").hidden = !parentMode;
+  el("modeBtn").textContent = parentMode ? "退出家长" : "家长";
+  el("modeBtn").dataset.on = parentMode ? "1" : "0";
+  if (parentMode) renderTasks();
+
+  el("logList").innerHTML = S.log.length
+    ? S.log.slice(0,14).map(e => {
+        const d = new Date(e.t), tm = (d.getMonth()+1) + "/" + d.getDate();
+        let col = "var(--steel-dim)", tx = esc(e.x || "");
+        if (e.k === "draw") { col = TIER[e.i].f; tx = "开出 <b>" + TIER[e.i].nm + "</b>" + (e.n > 1 ? " 等 " + e.n + " 个" : "") + (e.pity ? " · 保底" : ""); }
+        else if (e.k === "add") { col = "var(--ok)"; tx = "加分 <b>+" + fmt(e.n) + "</b> · " + esc(e.x||""); }
+        else if (e.k === "merge") { col = TIER[e.i+1].f; tx = "合成 <b>" + TIER[e.i+1].nm + " ×" + e.n + "</b>"; }
+        else if (e.k === "redeem") { col = TIER[TOP].f; tx = "🏆 兑换 <b>" + esc(e.x) + "</b>"; }
+        return '<li><span class="tm">' + tm + '</span><span class="dot" style="background:' + col + '"></span><span class="tx">' + tx + "</span></li>";
+      }).join("")
+    : '<li class="empty">还没有记录。先在「家长」加分，再来开盒。</li>';
+}
+
+function renderTasks(){
+  const groups = [];
+  S.cfg.tasks.forEach((t,i) => {
+    let g = groups.find(x => x.g === t.g);
+    if (!g) groups.push(g = {g:t.g, items:[]});
+    g.items.push({t, i});
+  });
+  el("taskGroups").innerHTML = groups.map(g =>
+    '<div class="grp"><span class="eyebrow">' + esc(g.g) + '</span><div class="tasks">'
+    + g.items.map(({t,i}) => {
+        const n = pend[i] || 0;
+        return '<div class="task" data-active="' + (n ? 1 : 0) + '">'
+          + '<button class="lb" data-inc="' + i + '">' + esc(t.l) + " <i>" + fmt(t.p) + "分</i></button>"
+          + '<span class="st"><button data-dec="' + i + '">−</button><span class="n">' + n + '</span><button data-inc="' + i + '">+</button></span></div>';
+      }).join("")
+    + "</div></div>").join("");
+
+  let sum = 0; for (const k in pend) sum += (pend[k]||0) * S.cfg.tasks[k].p;
+  el("pendSum").textContent = fmt(sum);
+  const roomD = S.cfg.capD - S.tally.dp, roomM = S.cfg.capM - S.tally.mp;
+  el("commitBtn").disabled = sum <= 0 || publishing;
+  el("capD").innerHTML = "今日 <b>" + fmt(S.tally.dp) + "</b> / " + fmt(S.cfg.capD);
+  el("capM").innerHTML = "本月 <b>" + fmt(S.tally.mp) + "</b> / " + fmt(S.cfg.capM);
+  el("capD").className = sum > roomD ? "over" : "";
+  el("capM").className = sum > roomM ? "over" : "";
+}
+
+/* ---------- persistence ---------- */
+function docSource(){
+  const tpl = b64d(el("tpl").textContent.trim());
+  const TM = "__TPL" + "_B64__", SM = "/*__" + "STATE__*/null";
+  return tpl.replace(TM, () => b64e(tpl)).replace(SM, () => JSON.stringify(S));
+}
+function toast(msg){
+  const d = document.createElement("div");
+  d.className = "toast"; d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 3200);
+}
+/* ---------- 远端：Netlify Functions + Blobs ---------- */
+function apiHead(){
+  const h = {"content-type":"application/json"};
+  if (syncKey) h["x-bb-key"] = syncKey;
+  return h;
+}
+async function remoteGet(){
+  const r = await fetch(API, {headers:apiHead(), cache:"no-store"});
+  if (!r.ok) { const e = new Error("GET " + r.status); e.status = r.status; throw e; }
+  return await r.json();
+}
+async function remotePut(st){
+  const r = await fetch(API, {method:"PUT", headers:apiHead(), body:JSON.stringify(st)});
+  if (r.status === 409) return {conflict:true, cur: await r.json()};
+  if (!r.ok) { const e = new Error("PUT " + r.status); e.status = r.status; throw e; }
+  return {conflict:false};
+}
+function storeLabel(){
+  if (readOnly) return "只读 · 仅本机";
+  if (backend === "artifact") return "Artifact 云端同步";
+  if (backend === "remote") return "网站后端同步";
+  return "仅本机 localStorage";
+}
+async function bootRemote(){
+  if (onArtifact || !/^https?:$/.test(location.protocol)) return;
+  let cur;
+  try { cur = await remoteGet(); }
+  catch (e) {
+    backend = "local";
+    if (e.status === 401) { readOnly = true; toast("同步密钥不对，进度只存在本机。"); }
+    return;
+  }
+  backend = "remote";
+  const R = cur && typeof cur === "object" ? migrate(cur) : null;
+  if (R && (R.seq|0) > (S.seq|0)) { S = R; rollTally(); render(); }
+  else if (!R || (S.seq|0) > (R.seq|0)) { try { await remotePut(S); } catch (e) {} }
+}
+
+async function save(){
+  S.seq = (S.seq|0) + 1;
+  if (S.log.length > 120) S.log.length = 120;
+  try { localStorage.setItem("bb.state", JSON.stringify(S)); } catch (e) {}
+  render();
+  if (readOnly) return false;
+  if (BOOTP) { try { await BOOTP; } catch (e) {} }
+
+  if (backend === "remote") {
+    try {
+      const r = await remotePut(S);
+      if (r.conflict) {
+        S = migrate(r.cur); rollTally(); render();
+        toast("另一台设备先存了，已同步到最新。");
+      }
+    } catch (e) {
+      if (e.status === 401) { readOnly = true; toast("同步密钥不对，进度只存在本机。"); }
+      else toast("同步失败，进度已存在本机。");
+    }
+    return false;                      // 远端保存不重载页面
+  }
+
+  if (!ART) ART = await ARTP;
+  if (!ART) return false;
+  publishing = true;
+  setTimeout(() => { if (publishing) { publishing = false; render(); } }, 8000);
+  try {
+    await ART.publish(docSource());
+    return true;                       // 页面会重载到新版本
+  } catch (e) {
+    publishing = false;
+    const c = e && e.code;
+    if (c === "conflict") return false;
+    if (c === "not_writer" || c === "not_granted" || c === "not_declared" || c === "capability_disabled") {
+      readOnly = true; toast("这台设备是只读的，进度只存在本机。");
+    } else toast("同步失败，进度已存在本机。");
+    render();
+    return false;
+  }
+}
+function push(e){ e.t = new Date().toISOString(); S.log.unshift(e); }
+
+/* ---------- draw ---------- */
+function pull(){
+  if (S.sincePlat + 1 >= S.cfg.pity) { S.sincePlat = 0; return {i:3, pity:true}; }
+  const r = S.cfg.rates, x = Math.random()*100;
+  let acc = 0, i = 0;
+  for (let k = 0; k < r.length; k++) { acc += r[k]; if (x < acc) { i = k; break; } }
+  S.sincePlat = i >= 3 ? 0 : S.sincePlat + 1;
+  return {i, pity:false};
+}
+async function drawN(n){
+  if (publishing) return;
+  const cost = S.cfg.cost;
+  n = Math.min(n, Math.floor(S.pts / cost));
+  if (n < 1) return;
+  const got = [];
+  let pity = false;
+  for (let k = 0; k < n; k++) { const r = pull(); got.push(r.i); if (r.pity) pity = true; }
+  if (S.cfg.tenGuard && n >= 10 && Math.max.apply(null, got) === 0) got[n-1] = 1;   // 十连保底：至少一个银
+  S.pts = Math.round((S.pts - cost*n)*10)/10;
+  got.forEach(i => { S.inv[i]++; S.seen[i]++; });
+  S.draws += n;
+  const best = Math.max.apply(null, got);
+  push({k:"draw", i:best, n, pity});
+  stashReveal(got, null, pity);
+  showOverlay(got, true);
+  const reloading = await save();
+  if (!reloading) { clearReveal(); revealNow(got, pity); }
+}
+
+/* ---------- merge / redeem ---------- */
+async function mergeAll(){
+  if (publishing) return;
+  const R = S.cfg.ratio, made = TIER.map(() => 0);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let i = 0; i < TOP; i++) while (S.inv[i] >= R) { S.inv[i] -= R; S.inv[i+1]++; S.seen[i+1]++; made[i+1]++; changed = true; }
+  }
+  let top = -1;
+  for (let i = TOP; i >= 1; i--) if (made[i]) { top = i; break; }
+  if (top < 0) return;
+  for (let i = TOP; i >= 1; i--) if (made[i]) push({k:"merge", i:i-1, n:made[i]});
+  await finishMerge(top);
+}
+async function mergeOne(i){
+  if (publishing || S.inv[i] < S.cfg.ratio) return;
+  S.inv[i] -= S.cfg.ratio; S.inv[i+1]++; S.seen[i+1]++;
+  push({k:"merge", i, n:1});
+  await finishMerge(i+1);
+}
+async function finishMerge(t){
+  stashReveal([t], "合成成功");
+  showOverlay([t], true);
+  const reloading = await save();
+  if (!reloading) { clearReveal(); revealNow([t], false, "合成成功"); }
+}
+async function redeem(){
+  if (publishing || S.inv[TOP] < 1) return;
+  if (!await ask("兑换奖励", "用 1 个终极陀螺换「<b style='color:" + TIER[TOP].f + "'>" + esc(S.cfg.prize) + "</b>」。终极陀螺会被消耗，记录保留。", "兑换")) return;
+  S.inv[TOP]--; S.redeemed++;
+  push({k:"redeem", x:S.cfg.prize});
+  await save();
+}
+
+/* ---------- points ---------- */
+async function commitPts(){
+  let sum = 0; const parts = [];
+  for (const k in pend) {
+    const n = pend[k]|0; if (!n) continue;
+    sum += n * S.cfg.tasks[k].p;
+    parts.push(S.cfg.tasks[k].l + "×" + n);
+  }
+  sum = Math.round(sum*10)/10;
+  if (sum <= 0) return;
+  rollTally();
+  const roomD = S.cfg.capD - S.tally.dp, roomM = S.cfg.capM - S.tally.mp;
+  const room = Math.min(roomD, roomM);
+  if (room <= 0) { toast(roomD <= 0 ? "今日已到上限，明天继续。" : "本月已到上限。"); return; }
+  let give = sum, capped = "";
+  if (sum > room) { give = Math.round(room*10)/10; capped = "（上限截至 " + fmt(give) + "）"; }
+  S.pts = Math.round((S.pts + give)*10)/10;
+  S.earned = Math.round((S.earned + give)*10)/10;
+  S.tally.dp = Math.round((S.tally.dp + give)*10)/10;
+  S.tally.mp = Math.round((S.tally.mp + give)*10)/10;
+  push({k:"add", n:give, x:parts.join("、") + capped});
+  for (const k in pend) delete pend[k];
+  await save();
+}
+
+/* ---------- overlay ---------- */
+function stashReveal(list, lab, pity){ try { sessionStorage.setItem("bb.reveal", JSON.stringify({list, lab:lab||null, pity:!!pity, ts:Date.now()})); } catch (e) {} }
+function clearReveal(){ try { sessionStorage.removeItem("bb.reveal"); } catch (e) {} }
+
+function showOverlay(list, spinning, lab, pity){
+  const best = Math.max.apply(null, list), t = TIER[best];
+  el("ovRoot").innerHTML =
+    '<div class="ov ' + (spinning ? "spin" : "rev") + '" id="ov"><div class="ov-in">'
+    + '<div class="burst" style="--flare:' + t.f + '"></div>'
+    + '<div class="spinwrap" id="ovSpin">' + topSVG(spinning ? "E" : best) + "</div>"
+    + '<div class="ov-lab" id="ovLab">' + (spinning ? "开盒中" : (lab || t.en)) + "</div>"
+    + '<div class="ov-nm" id="ovNm" style="color:' + t.f + '">' + (spinning ? "" : t.nm) + "</div>"
+    + '<div class="ov-sub" id="ovSub">' + (spinning ? "" : subFor(list, pity)) + "</div>"
+    + '<div class="haul" id="ovHaul">' + (spinning ? "" : haulHTML(list)) + "</div>"
+    + '<button id="ovBtn"' + (spinning ? " hidden" : "") + ">继续</button>"
+    + "</div></div>";
+  const b = el("ovBtn"); if (b) b.onclick = closeOverlay;
+}
+function subFor(list, pity){
+  if (pity) return "保底触发";
+  if (list.length === 1) return "";
+  const c = {}; list.forEach(i => c[i] = (c[i]||0) + 1);
+  return Object.keys(c).sort((a,b) => b-a).map(i => TIER[i].nm.replace("陀螺","") + " ×" + c[i]).join(" · ");
+}
+function haulHTML(list){
+  if (list.length < 2) return "";
+  return list.map((i,k) => '<span class="hz" style="animation-delay:' + (k*45) + 'ms">' + topSVG(i) + "</span>").join("");
+}
+function revealNow(list, pity, lab){
+  const best = Math.max.apply(null, list), t = TIER[best], ov = el("ov");
+  if (!ov) { showOverlay(list, false, lab, pity); return; }
+  el("ovSpin").innerHTML = topSVG(best);
+  ov.classList.remove("spin"); void ov.offsetWidth; ov.classList.add("rev");
+  el("ovLab").textContent = lab || t.en;
+  el("ovNm").textContent = t.nm; el("ovNm").style.color = t.f;
+  el("ovSub").textContent = subFor(list, pity);
+  el("ovHaul").innerHTML = haulHTML(list);
+  const b = el("ovBtn"); b.hidden = false; b.onclick = closeOverlay;
+  if (best >= 2) try { navigator.vibrate && navigator.vibrate(best >= 3 ? [40,60,120] : 40); } catch (e) {}
+}
+function closeOverlay(){ el("ovRoot").innerHTML = ""; render(); }
+
+/* ---------- modals ---------- */
+function closeModal(){ el("modalRoot").innerHTML = ""; }
+function ask(title, body, okLabel){
+  return new Promise(res => {
+    el("modalRoot").innerHTML =
+      '<div class="scrim"><div class="modal pop" style="max-width:340px"><h3>' + esc(title) + "</h3>"
+      + '<p style="font-size:13px;color:var(--steel);margin:0;line-height:1.7">' + body + "</p>"
+      + '<div class="mrow"><button id="askX">取消</button><button class="pri" id="askOk">' + esc(okLabel) + "</button></div></div></div>";
+    el("askX").onclick = () => { closeModal(); res(false); };
+    el("askOk").onclick = () => { closeModal(); res(true); };
+  });
+}
+function openPin(){
+  el("modalRoot").innerHTML =
+    '<div class="scrim"><div class="modal pop"><h3>家长模式</h3>'
+    + '<div class="fld"><label>PIN</label><input id="pinIn" type="password" inputmode="numeric" autocomplete="off"></div>'
+    + '<div class="mrow"><button id="pinX">取消</button><button class="pri" id="pinOk">进入</button></div></div></div>';
+  el("pinIn").focus();
+  el("pinX").onclick = closeModal;
+  el("pinIn").onkeydown = e => { if (e.key === "Enter") el("pinOk").click(); };
+  el("pinOk").onclick = () => {
+    if (el("pinIn").value.trim() === String(S.cfg.pin)) { parentMode = true; closeModal(); render(); }
+    else { el("pinIn").value = ""; el("pinIn").placeholder = "PIN 不对，再试一次"; }
+  };
+}
+function fld(lab, id, type, val){
+  return '<div class="fld"><label>' + lab + '</label><input id="' + id + '" type="' + type + '" value="' + esc(val) + '"></div>';
+}
+function fldi(lab, id, val){
+  return '<div><label>' + lab + '</label><input id="' + id + '" type="number" step="any" value="' + esc(val) + '"></div>';
+}
+function openBackup(isExp){
+  el("modalRoot").innerHTML =
+    '<div class="scrim"><div class="modal pop"><h3>' + (isExp ? "导出备份" : "导入备份") + '</h3>'
+    + '<div class="note">' + (isExp ? "全选复制下面这段文字，存到备忘录或网盘里。" : "把之前导出的那段文字整段贴进来。") + '</div>'
+    + '<div class="fld"><textarea id="bkTa" rows="8" spellcheck="false"></textarea></div>'
+    + '<div class="mrow"><button id="bkX">关闭</button>'
+    + (isExp ? '' : '<button class="pri" id="bkOk">导入并覆盖</button>')
+    + '</div></div></div>';
+  const ta = el("bkTa");
+  if (isExp) { ta.value = JSON.stringify(S); ta.readOnly = true; ta.focus(); ta.select(); }
+  el("bkX").onclick = closeModal;
+  if (isExp) return;
+  el("bkOk").onclick = async () => {
+    let d;
+    try { d = JSON.parse(ta.value); } catch (e) { toast("格式不对，请贴完整的备份文字。"); return; }
+    if (!d || typeof d !== "object") { toast("格式不对，请贴完整的备份文字。"); return; }
+    if (!await ask("导入备份", "会用备份里的进度覆盖现在的进度，不能撤销。", "确认导入")) return;
+    const sq = (S.seq|0) + 1;
+    S = migrate(d); S.seq = sq; rollTally();
+    closeModal(); await save();
+    toast("已导入。");
+  };
+}
+function openSettings(){
+  const c = S.cfg, ev = evDraw(), ypc = yuanPerCu();
+  const need = Math.ceil(TARGET / ev);
+  const perMonth = (c.capM / c.cost) * ev * ypc;
+  const months = (need * c.cost) / c.capM;
+  el("modalRoot").innerHTML =
+    '<div class="scrim"><div class="modal pop"><h3>设置与调整</h3>'
+    + '<div class="note">每盒期望 <span class="num">' + ev.toFixed(3) + '</span> 铜当量 · 1 铜当量 ≈ <span class="num">¥' + ypc.toFixed(3) + '</span><br>'
+    + '走完八级约 <span class="num">' + need.toLocaleString() + '</span> 盒 = <span class="num">' + (need*c.cost).toLocaleString() + '</span> 分<br>'
+    + '按月上限满额，最快 <span class="num">' + months.toFixed(2) + '</span> 个月达成，月支出上限 <span class="num">¥' + Math.round(perMonth) + '</span><br>'
+    + '<b>无论运气好坏，实物支出总额恒为 ¥' + c.yuan + '，运气只影响日期。</b></div>'
+
+    + '<div class="sec-h">奖励</div>'
+    + fld("奖品名称", "cPrize", "text", c.prize)
+    + '<div class="fld row">' + fldi("奖品价格 ¥","cYuan",c.yuan) + fldi("每盒消耗（分）","cCost",c.cost) + "</div>"
+
+    + '<div class="sec-h">概率 %（合计需为 100）</div>'
+    + '<div class="fld row">' + fldi("铜 1","r0",c.rates[0]) + fldi("银 3","r1",c.rates[1]) + "</div>"
+    + '<div class="fld row">' + fldi("金 9","r2",c.rates[2]) + fldi("铂金 27","r3",c.rates[3]) + "</div>"
+    + '<div class="fld row">' + fldi("钻石 81","r4",c.rates[4]) + fldi("合成比例 n→1","cRatio",c.ratio) + "</div>"
+    + '<div class="fld row">' + fldi("铂金保底盒数","cPity",c.pity) + fldi("十连保底银（1开0关）","cTen",c.tenGuard?1:0) + "</div>"
+
+    + '<div class="sec-h">上限与门禁</div>'
+    + '<div class="fld row">' + fldi("每日积分上限","cCapD",c.capD) + fldi("每月积分上限","cCapM",c.capM) + "</div>"
+    + fld("家长 PIN", "cPin", "text", c.pin)
+
+    + '<div class="sec-h">同步与备份</div>'
+    + '<div class="note">当前存储：<b>' + storeLabel() + '</b></div>'
+    + fld("同步密钥（对应 Netlify 的 BB_KEY，没设就留空）", "cKey", "text", syncKey)
+    + '<div class="mrow"><button id="setExp">导出备份</button><button id="setImp">导入备份</button></div>'
+
+    + '<div class="sec-h">手动调整</div>'
+    + '<div class="fld row">' + fldi("积分 ±","aPts",0) + fldi("铜 ±","a0",0) + "</div>"
+    + '<div class="fld row">' + fldi("银 ±","a1",0) + fldi("金 ±","a2",0) + "</div>"
+    + '<div class="fld row">' + fldi("铂金 ±","a3",0) + fldi("钻石 ±","a4",0) + "</div>"
+    + '<div class="fld row">' + fldi("绿宝石 ±","a5",0) + fldi("红金 ±","a6",0) + "</div>"
+    + '<div class="fld"><label>调整备注</label><input id="aWhy" type="text" placeholder="例如：兑换小奖 / 补登"></div>'
+
+    + '<div class="mrow"><button id="setX">取消</button><button class="pri" id="setOk">保存</button></div>'
+    + '<div class="mrow"><button class="dgr" id="setReset">全部重置</button></div>'
+    + "</div></div>";
+
+  el("setX").onclick = closeModal;
+  el("setExp").onclick = () => openBackup(true);
+  el("setImp").onclick = () => openBackup(false);
+  el("setReset").onclick = async () => {
+    if (!await ask("全部重置", "清空积分、陀螺与全部记录，从今天重新开始。设置会保留。", "确认重置")) return;
+    const keep = clone(S.cfg), sq = S.seq;
+    S = clone(DEFAULT); S.cfg = keep; S.seq = sq; S.start = todayISO();
+    closeModal(); await save();
+  };
+  el("setOk").onclick = async () => {
+    const g = id => { const v = parseFloat(el(id).value); return isNaN(v) ? 0 : v; };
+    const rates = [g("r0"), g("r1"), g("r2"), g("r3"), g("r4")];
+    const sum = Math.round(rates.reduce((a,b) => a+b, 0)*100)/100;
+    if (Math.abs(sum - 100) > 0.01) { toast("概率合计是 " + sum + "%，请调成 100%。"); return; }
+    c.prize = el("cPrize").value.trim() || c.prize;
+    c.yuan = Math.max(1, g("cYuan")); c.cost = Math.max(0.5, g("cCost"));
+    c.rates = rates; c.ratio = Math.max(2, Math.round(g("cRatio"))); c.pity = Math.max(1, Math.round(g("cPity")));
+    c.tenGuard = g("cTen") >= 1;
+    c.capD = Math.max(1, g("cCapD")); c.capM = Math.max(1, g("cCapM"));
+    c.pin = el("cPin").value.trim() || c.pin;
+    const nk = el("cKey").value.trim();
+    if (nk !== syncKey) { syncKey = nk; try { localStorage.setItem("bb.key", syncKey); } catch (e) {} }
+    const dp = g("aPts"), adj = [g("a0"),g("a1"),g("a2"),g("a3"),g("a4"),g("a5"),g("a6")];
+    const why = el("aWhy").value.trim();
+    if (dp || adj.some(Boolean)) {
+      S.pts = Math.max(0, Math.round((S.pts + dp)*10)/10);
+      adj.forEach((n,i) => { if (n) { S.inv[i] = Math.max(0, S.inv[i] + Math.round(n)); if (n > 0) S.seen[i] += Math.round(n); } });
+      const bits = [];
+      if (dp) bits.push((dp>0?"+":"") + fmt(dp) + " 分");
+      adj.forEach((n,i) => { if (n) bits.push((n>0?"+":"") + Math.round(n) + " " + TIER[i].nm); });
+      push({k:"adj", x:bits.join("、") + (why ? " · " + why : "")});
+    }
+    closeModal(); await save();
+  };
+}
+
+/* ---------- wiring ---------- */
+el("draw1").onclick = () => drawN(1);
+el("draw10").onclick = () => drawN(10);
+el("mergeAll").onclick = mergeAll;
+el("commitBtn").onclick = commitPts;
+el("setBtn").onclick = openSettings;
+el("modeBtn").onclick = () => { if (parentMode) { parentMode = false; render(); } else openPin(); };
+el("shelf").onclick = e => {
+  const m = e.target.closest("[data-merge]"); if (m) return mergeOne(+m.dataset.merge);
+  if (e.target.closest("[data-redeem]")) return redeem();
+};
+el("taskGroups").onclick = e => {
+  const inc = e.target.closest("[data-inc]"), dec = e.target.closest("[data-dec]");
+  if (inc) { const i = inc.dataset.inc; pend[i] = (pend[i]||0) + 1; renderTasks(); }
+  else if (dec) { const i = dec.dataset.dec; pend[i] = Math.max(0, (pend[i]||0) - 1); if (!pend[i]) delete pend[i]; renderTasks(); }
+};
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  closeModal();
+  const b = el("ovBtn"); if (b && !b.hidden) closeOverlay();
+});
+
+render();
+BOOTP = bootRemote();
+
+try {
+  const raw = sessionStorage.getItem("bb.reveal");
+  if (raw) {
+    const r = JSON.parse(raw);
+    sessionStorage.removeItem("bb.reveal");
+    if (Date.now() - r.ts < 12e4 && Array.isArray(r.list) && r.list.length) {
+      showOverlay(r.list, true);
+      setTimeout(() => revealNow(r.list, r.pity, r.lab), 850);
+    }
+  }
+} catch (e) {}
+})();
+</script>
